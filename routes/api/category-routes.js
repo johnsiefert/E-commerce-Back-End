@@ -7,49 +7,71 @@ router.get('/', (req, res) => {
   // find all categories
   // be sure to include its associated Products
   console.log('======================');
-  Post.findAll({
+  Category.findAll({
     attributes: [
       'id',
-      'post_url',
-      'title',
-      'created_at',
+      'category_name'
     ],
     include: [
       {
-        model: Comment,
-        attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
-        include: {
-          model: User,
-          attributes: ['username']
-        }
+        model: Product,
+        attributes: ['id', 'product_name', 'price', 'stock', 'category_id'],
       },
+    ]
+  })
+    .then(dbCataData => res.json(dbCataData))
+    .catch(err => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+
+});
+
+router.get('/:id', (req, res) => {
+  // find one category by its `id` value
+  // be sure to include its associated Products
+  Category.findOne({
+    where: {
+      id: req.params.id
+    },
+    attributes: ['id', 'category_name'],
+    include: [
       {
-        model: User,
-        attributes: ['username']
+        model: Product,
+        attributes: ['id', 'product_name', 'price', 'stock', 'category_id']
       }
     ]
   })
-    .then(dbPostData => res.json(dbPostData))
+    .then(dbCataData => {
+      if (!dbCataData) {
+        res.status(404).json({ message: 'No post found with this id' });
+        return;
+      }
+      res.json(dbCataData);
+    })
     .catch(err => {
       console.log(err);
       res.status(500).json(err);
     });
 });
 
-router.get('/:id', (req, res) => {
-  // find one category by its `id` value
-  // be sure to include its associated Products
-});
-
 router.post('/', (req, res) => {
   // create a new category
+  Category.create({
+    category_name: req.body.category_name,
+  })
+  .then(dbCataData => res.json(dbCataData))
+  .catch(err => {
+    console.log(err);
+    res.status(500).json(err);
+  })
 });
 
 router.put('/:id', (req, res) => {
   // update a category by its `id` value
-  Post.update(
+  Category.update(
     {
-      title: req.body.title
+      category_name: req.body.category_name
     },
     {
       where: {
@@ -57,12 +79,12 @@ router.put('/:id', (req, res) => {
       }
     }
   )
-    .then(dbPostData => {
-      if (!dbPostData) {
-        res.status(404).json({ message: 'No post found with this id' });
+    .then(dbCataData => {
+      if (!dbCataData) {
+        res.status(404).json({ message: 'No Category found with this id' });
         return;
       }
-      res.json(dbPostData);
+      res.json(dbCataData);
     })
     .catch(err => {
       console.log(err);
@@ -72,17 +94,17 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', (req, res) => {
   console.log('id', req.params.id);
-  Post.destroy({
+  Category.destroy({
     where: {
       id: req.params.id
     }
   })
-    .then(dbPostData => {
-      if (!dbPostData) {
+    .then(dbCataData => {
+      if (!dbCataData) {
         res.status(404).json({ message: 'No post found with this id' });
         return;
       }
-      res.json(dbPostData);
+      res.json(dbCataData);
     })
     .catch(err => {
       console.log(err);
